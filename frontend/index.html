@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>CRUD Produkty</title>
+<style>
+body{font-family:Arial;max-width:800px;margin:20px auto;padding:0 10px;}
+input,button{padding:6px;margin:2px;}
+li{margin:6px 0;}
+</style>
+</head>
+<body>
+<h1>Produkty</h1>
+
+<div>
+<input id="nazwa" placeholder="Nazwa">
+<input id="sku" placeholder="SKU">
+<input id="cena" type="number" step="0.01" placeholder="Cena">
+<input id="kategoria" placeholder="Kategoria">
+<input id="stan_magazynu" type="number" placeholder="Stan magazynu">
+<button onclick="createProdukt()">Dodaj</button>
+</div>
+
+<ul id="lista"></ul>
+
+<script>
+async function loadProdukty(){
+  const res = await fetch("/produkty");
+  const produkty = await res.json();
+  const lista = document.getElementById("lista");
+  lista.innerHTML = "";
+  produkty.forEach(p=>{
+    const li=document.createElement("li");
+    li.innerHTML=`
+      <input value="${p.nazwa}" onchange="updateProdukt(${p.id},this)">
+      <input value="${p.sku}" onchange="updateProdukt(${p.id},this)">
+      <button onclick="deleteProdukt(${p.id})">Usuń</button>
+    `;
+    lista.appendChild(li);
+  });
+}
+
+async function createProdukt(){
+  const body={
+    nazwa: document.getElementById("nazwa").value,
+    sku: document.getElementById("sku").value,
+    cena: parseFloat(document.getElementById("cena").value),
+    kategoria: document.getElementById("kategoria").value,
+    stan_magazynu: parseInt(document.getElementById("stan_magazynu").value)
+  };
+  await fetch("/produkty",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  loadProdukty();
+}
+
+async function updateProdukt(id,input){
+  const li = input.parentElement;
+  const inputs = li.querySelectorAll("input");
+  const body={
+    nazwa: inputs[0].value,
+    sku: inputs[1].value,
+    cena: 0, kategoria:"", stan_magazynu:0 // minimalne pola
+  };
+  await fetch("/produkty/"+id,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  loadProdukty();
+}
+
+async function deleteProdukt(id){
+  if(!confirm("Usunąć?")) return;
+  await fetch("/produkty/"+id,{method:"DELETE"});
+  loadProdukty();
+}
+
+loadProdukty();
+</script>
+</body>
+</html>
