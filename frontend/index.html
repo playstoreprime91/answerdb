@@ -32,8 +32,8 @@ async function loadProdukty(){
   produkty.forEach(p=>{
     const li=document.createElement("li");
     li.innerHTML=`
-      <input value="${p.nazwa}" onchange="updateProdukt(${p.id},this)">
-      <input value="${p.sku}" onchange="updateProdukt(${p.id},this)">
+      <input value="${p.nazwa}" onchange="updateProdukt(${p.id}, this.parentElement)">
+      <input value="${p.sku}" onchange="updateProdukt(${p.id}, this.parentElement)">
       <button onclick="deleteProdukt(${p.id})">Usuń</button>
     `;
     lista.appendChild(li);
@@ -52,13 +52,12 @@ async function createProdukt(){
   loadProdukty();
 }
 
-async function updateProdukt(id,input){
-  const li = input.parentElement;
+async function updateProdukt(id, li){
   const inputs = li.querySelectorAll("input");
   const body={
     nazwa: inputs[0].value,
     sku: inputs[1].value,
-    cena: 0, kategoria:"", stan_magazynu:0 // minimalne pola
+    cena: 0, kategoria:"", stan_magazynu:0
   };
   await fetch("/produkty/"+id,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
   loadProdukty();
